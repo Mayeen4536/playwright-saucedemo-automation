@@ -1,36 +1,33 @@
 import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
 
 const baseUrl = 'https://www.saucedemo.com/';
 const username = 'standard_user';
 const password = 'secret_sauce';
 
-async function login(page) {
-  await page.goto(baseUrl);
-  await page.fill('#user-name', username);
-  await page.fill('#password', password);
-  await page.click('#login-button');
-  await expect(page).toHaveURL(/inventory/);
-}
-
 test.describe('SauceDemo Automation Suite', () => {
   test('valid user can login successfully', async ({ page }) => {
-    await login(page);
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(username, password);
+    await loginPage.expectLoginSuccess();
+
     await expect(page.locator('.inventory_list')).toBeVisible();
   });
 
   test('locked out user cannot login', async ({ page }) => {
-    await page.goto(baseUrl);
-    await page.fill('#user-name', 'locked_out_user');
-    await page.fill('#password', password);
-    await page.click('#login-button');
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('locked_out_user', password);
 
-    await expect(page.locator('[data-test="error"]')).toContainText(
-      'Sorry, this user has been locked out'
-    );
+    await loginPage.expectLoginError('Sorry, this user has been locked out');
   });
 
   test('user can add product to cart', async ({ page }) => {
-    await login(page);
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(username, password);
+    await loginPage.expectLoginSuccess();
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
 
@@ -39,7 +36,10 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('user can remove product from cart', async ({ page }) => {
-    await login(page);
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(username, password);
+    await loginPage.expectLoginSuccess();
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
     await page.click('[data-test="remove-sauce-labs-backpack"]');
@@ -48,7 +48,10 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('user can complete checkout flow', async ({ page }) => {
-    await login(page);
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(username, password);
+    await loginPage.expectLoginSuccess();
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
     await page.click('.shopping_cart_link');
@@ -66,7 +69,10 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('sorting products by price low to high works correctly', async ({ page }) => {
-    await login(page);
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(username, password);
+    await loginPage.expectLoginSuccess();
 
     await page.selectOption('[data-test="product-sort-container"]', 'lohi');
 
@@ -78,7 +84,10 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('logout works successfully', async ({ page }) => {
-    await login(page);
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(username, password);
+    await loginPage.expectLoginSuccess();
 
     await page.click('#react-burger-menu-btn');
     await page.click('#logout_sidebar_link');
