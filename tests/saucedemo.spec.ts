@@ -5,25 +5,8 @@ const baseUrl = 'https://www.saucedemo.com/';
 const username = 'standard_user';
 const password = 'secret_sauce';
 
+// Login scenarios live in tests/login.spec.ts. Here login is only test setup.
 test.describe('SauceDemo Automation Suite', () => {
-  test('valid user can login successfully', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(username, password);
-    await expect(page).toHaveURL(/inventory/);
-
-    await expect(page.locator('.inventory_list')).toBeVisible();
-  });
-
-  test('locked out user cannot login', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login('locked_out_user', password);
-
-    const errorText = await loginPage.getLoginErrorMessage();
-    expect(errorText).toContain('Sorry, this user has been locked out');
-  });
-
   test('user can add product to cart', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();

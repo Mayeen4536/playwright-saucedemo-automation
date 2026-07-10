@@ -18,8 +18,9 @@ a specific automation best practice: Page Object Model, a disciplined locator st
 and a strict separation between *interaction logic* (page objects) and *verification*
 (tests).
 
-**Currently covered flows:** login (valid and locked-out user), adding and removing
-products from the cart, the full checkout journey, product sorting by price, and logout.
+**Currently covered flows:** login (valid user, invalid credentials, locked-out user,
+and empty-field validations), adding and removing products from the cart, the full
+checkout journey, product sorting by price, and logout.
 
 ---
 
@@ -47,7 +48,8 @@ saucedemo-playwright/
 ├── pages/                        # Page Objects (locators + actions + state helpers)
 │   └── LoginPage.ts
 ├── tests/                        # Test specs (all assertions live here)
-│   └── saucedemo.spec.ts
+│   ├── login.spec.ts             # Login scenarios (positive + negative)
+│   └── saucedemo.spec.ts         # Cart, checkout, sorting, logout flows
 ├── .github/
 │   └── workflows/
 │       └── playwright-tests.yml  # CI pipeline
