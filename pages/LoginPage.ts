@@ -1,5 +1,11 @@
-import { type Page, type Locator, expect } from '@playwright/test';
+import { type Page, type Locator } from '@playwright/test';
 
+/**
+ * Page Object for the SauceDemo login page.
+ *
+ * Design rule: this class exposes locators and state (booleans, strings).
+ * It does NOT contain expect() assertions — the tests decide what to assert.
+ */
 export class LoginPage {
   readonly page: Page;
   readonly url: string;
@@ -11,27 +17,46 @@ export class LoginPage {
   constructor(page: Page) {
     this.page = page;
     this.url = 'https://www.saucedemo.com/';
-    this.usernameInput = page.locator('#user-name');
-    this.passwordInput = page.locator('#password');
-    this.loginButton = page.locator('#login-button');
-    this.errorMessage = page.locator('[data-test="error"]');
+
+    // Preferred tier — role-based. The submit button derives its accessible
+    // name ("Login") from its value attribute, so we find it the way a user
+    // or a screen reader would, not via an internal id.
+    this.loginButton = page.getByRole('button', { name: 'Login' });
+
+    // The inputs have no <label>, so the placeholder is the most stable,
+    // user-visible handle available (one step above raw CSS/id).
+    this.usernameInput = page.getByPlaceholder('Username');
+    this.passwordInput = page.getByPlaceholder('Password');
+
+    // The error banner has no meaningful role or name. SauceDemo ships a
+    // dedicated data-test hook for it, which is the sanctioned automation
+    // attribute (mapped via testIdAttribute in playwright.config.ts).
+    this.errorMessage = page.getByTestId('error');
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto(this.url);
   }
 
-  async login(username: string, password: string) {
+  async login(username: string, password: string): Promise<void> {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);
     await this.loginButton.click();
   }
 
-  async expectLoginSuccess() {
-    await expect(this.page).toHaveURL(/inventory/);
+  /**
+   * Returns whether the login page is currently displayed.
+   * Returns state only — the test decides whether that state is expected.
+   */
+  async isLoginPageDisplayed(): Promise<boolean> {
+    return this.loginButton.isVisible();
   }
 
-  async expectLoginError(message: string) {
-    await expect(this.errorMessage).toContainText(message);
+  /**
+   * Returns the login error text (trimmed), or an empty string if none.
+   * The underlying locator query waits for the element to attach to the DOM.
+   */
+  async getLoginErrorMessage(): Promise<string> {
+    return (await this.errorMessage.textContent())?.trim() ?? '';
   }
 }

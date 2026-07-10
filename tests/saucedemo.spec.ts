@@ -10,7 +10,7 @@ test.describe('SauceDemo Automation Suite', () => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
-    await loginPage.expectLoginSuccess();
+    await expect(page).toHaveURL(/inventory/);
 
     await expect(page.locator('.inventory_list')).toBeVisible();
   });
@@ -20,14 +20,15 @@ test.describe('SauceDemo Automation Suite', () => {
     await loginPage.goto();
     await loginPage.login('locked_out_user', password);
 
-    await loginPage.expectLoginError('Sorry, this user has been locked out');
+    const errorText = await loginPage.getLoginErrorMessage();
+    expect(errorText).toContain('Sorry, this user has been locked out');
   });
 
   test('user can add product to cart', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
-    await loginPage.expectLoginSuccess();
+    await expect(page).toHaveURL(/inventory/);
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
 
@@ -39,7 +40,7 @@ test.describe('SauceDemo Automation Suite', () => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
-    await loginPage.expectLoginSuccess();
+    await expect(page).toHaveURL(/inventory/);
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
     await page.click('[data-test="remove-sauce-labs-backpack"]');
@@ -51,7 +52,7 @@ test.describe('SauceDemo Automation Suite', () => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
-    await loginPage.expectLoginSuccess();
+    await expect(page).toHaveURL(/inventory/);
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
     await page.click('.shopping_cart_link');
@@ -72,7 +73,7 @@ test.describe('SauceDemo Automation Suite', () => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
-    await loginPage.expectLoginSuccess();
+    await expect(page).toHaveURL(/inventory/);
 
     await page.selectOption('[data-test="product-sort-container"]', 'lohi');
 
@@ -87,12 +88,12 @@ test.describe('SauceDemo Automation Suite', () => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
-    await loginPage.expectLoginSuccess();
+    await expect(page).toHaveURL(/inventory/);
 
     await page.click('#react-burger-menu-btn');
     await page.click('#logout_sidebar_link');
 
     await expect(page).toHaveURL(baseUrl);
-    await expect(page.locator('#login-button')).toBeVisible();
+    expect(await loginPage.isLoginPageDisplayed()).toBe(true);
   });
 });
