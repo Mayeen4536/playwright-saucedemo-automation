@@ -7,10 +7,15 @@ const password = 'secret_sauce';
 
 // Login scenarios live in tests/login.spec.ts. Here login is only test setup.
 test.describe('SauceDemo Automation Suite', () => {
-  test('user can add product to cart', async ({ page }) => {
-    const loginPage = new LoginPage(page);
+  let loginPage: LoginPage;
+
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login(username, password);
+  });
+
+  test('user can add product to cart', async ({ page }) => {
     await expect(page).toHaveURL(/inventory/);
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
@@ -20,9 +25,6 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('user can remove product from cart', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(username, password);
     await expect(page).toHaveURL(/inventory/);
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
@@ -32,9 +34,6 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('user can complete checkout flow', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(username, password);
     await expect(page).toHaveURL(/inventory/);
 
     await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
@@ -53,9 +52,6 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('sorting products by price low to high works correctly', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(username, password);
     await expect(page).toHaveURL(/inventory/);
 
     await page.selectOption('[data-test="product-sort-container"]', 'lohi');
@@ -68,9 +64,6 @@ test.describe('SauceDemo Automation Suite', () => {
   });
 
   test('logout works successfully', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(username, password);
     await expect(page).toHaveURL(/inventory/);
 
     await page.click('#react-burger-menu-btn');
