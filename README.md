@@ -34,6 +34,9 @@ checkout journey, product sorting by price, and logout.
 - **State helper methods** — e.g. `isLoginPageDisplayed()`, `getLoginErrorMessage()`.
 - **Auto-waiting & web-first assertions** — no fixed `sleep`/`waitForTimeout` calls.
 - **Configurable test IDs** — `testIdAttribute` mapped to SauceDemo's `data-test` hooks.
+- **Custom Playwright fixture** — `tests/fixtures.ts` extends the base `test` with a
+  `loginPage` fixture (via `test.extend()`) that provides a ready-to-use `LoginPage`
+  without auto-logging in, so tests choose their own credentials and outcome.
 - **Rich reporting** — list + HTML reporters, with screenshots, video, and traces
   captured on failure.
 - **Continuous Integration** — GitHub Actions runs the suite on every push to `main`,
@@ -48,7 +51,10 @@ saucedemo-playwright/
 ├── pages/                        # Page Objects (locators + actions + state helpers)
 │   └── LoginPage.ts
 ├── tests/                        # Test specs (all assertions live here)
-│   ├── login.spec.ts             # Login scenarios (positive + negative)
+│   ├── fixtures.ts               # Custom test.extend() — provides the loginPage fixture
+│   ├── utils/
+│   │   └── auth.ts               # Shared login-setup helper (used by saucedemo.spec.ts)
+│   ├── login.spec.ts             # Login scenarios (positive + negative), uses loginPage fixture
 │   └── saucedemo.spec.ts         # Cart, checkout, sorting, logout flows
 ├── .github/
 │   └── workflows/
