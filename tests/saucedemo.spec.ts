@@ -1,18 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
+import { loginAsStandardUser } from './utils/auth';
 
 const baseUrl = 'https://www.saucedemo.com/';
-const username = 'standard_user';
-const password = 'secret_sauce';
 
 // Login scenarios live in tests/login.spec.ts. Here login is only test setup.
 test.describe('SauceDemo Automation Suite', () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(username, password);
+    loginPage = await loginAsStandardUser(page);
   });
 
   test('user can add product to cart', async ({ page }) => {
