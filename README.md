@@ -37,6 +37,9 @@ checkout journey, product sorting by price, and logout.
 - **Custom Playwright fixture** — `tests/fixtures.ts` extends the base `test` with a
   `loginPage` fixture (via `test.extend()`) that provides a ready-to-use `LoginPage`
   without auto-logging in, so tests choose their own credentials and outcome.
+- **Typed, data-driven login tests** — `tests/test-data/loginData.ts` defines reusable
+  login accounts and negative-scenario data with explicit TypeScript types; negative
+  login tests are generated from that data instead of being hand-duplicated.
 - **Rich reporting** — list + HTML reporters, with screenshots, video, and traces
   captured on failure.
 - **Continuous Integration** — GitHub Actions runs the suite on every push to `main`,
@@ -54,7 +57,9 @@ saucedemo-playwright/
 │   ├── fixtures.ts               # Custom test.extend() — provides the loginPage fixture
 │   ├── utils/
 │   │   └── auth.ts               # Shared login-setup helper (used by saucedemo.spec.ts)
-│   ├── login.spec.ts             # Login scenarios (positive + negative), uses loginPage fixture
+│   ├── test-data/
+│   │   └── loginData.ts          # Typed reusable login accounts + negative scenario data
+│   ├── login.spec.ts             # Login scenarios (positive + data-driven negatives)
 │   └── saucedemo.spec.ts         # Cart, checkout, sorting, logout flows
 ├── .github/
 │   └── workflows/
