@@ -119,6 +119,35 @@ npx playwright test --list                    # list tests without running them
 
 ---
 
+## Environment Configuration
+
+**Environment selection.** Tests run against a named environment selected via the
+`TEST_ENV` variable — `qa` or `staging`, defined in `config/environments.ts`. If unset,
+it defaults to `qa`. An unknown value fails immediately with a clear error before any
+test runs.
+
+**Required setup.** Copy the example file and adjust values if needed:
+
+```bash
+cp .env.example .env
+```
+
+`.env` is git-ignored — it is never committed.
+
+**Example commands:**
+
+```bash
+npm run test:qa         # run against the qa environment
+npm run test:staging    # run against the staging environment
+npx playwright test     # TEST_ENV unset — defaults to qa
+```
+
+**Secret-handling warning.** `.env.example` contains placeholder values only. Never put
+real credentials, tokens, or non-public URLs into any committed file — only `.env`
+(git-ignored) or your CI provider's secret store.
+
+---
+
 ## Why This Framework Was Built
 
 This project exists to demonstrate **how a professional QA/SDET structures a UI
