@@ -6,12 +6,15 @@
   "scripts": {
     "test": "npx playwright test",
     "test:headed": "npx playwright test --headed",
-    "test:report": "npx playwright show-report"
+    "test:report": "npx playwright show-report",
+    "test:qa": "cross-env TEST_ENV=qa npx playwright test",
+    "test:staging": "cross-env TEST_ENV=staging npx playwright test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.58.2",
+    "cross-env": "^10.1.0"
   }
 }

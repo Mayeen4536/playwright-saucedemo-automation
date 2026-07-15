@@ -8,7 +8,6 @@ import { type Page, type Locator } from '@playwright/test';
  */
 export class LoginPage {
   readonly page: Page;
-  readonly url: string;
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
@@ -16,7 +15,6 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.url = 'https://www.saucedemo.com/';
 
     // Preferred tier — role-based. The submit button derives its accessible
     // name ("Login") from its value attribute, so we find it the way a user
@@ -35,7 +33,9 @@ export class LoginPage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(this.url);
+    // Relative — resolves against the configured baseURL (see playwright.config.ts),
+    // so this page object works unchanged against any configured environment.
+    await this.page.goto('/');
   }
 
   async login(username: string, password: string): Promise<void> {

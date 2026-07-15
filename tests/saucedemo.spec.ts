@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { loginAsStandardUser } from './utils/auth';
+import { getEnvironmentConfig } from '../config/environments';
 
-const baseUrl = 'https://www.saucedemo.com/';
+const { baseURL: baseUrl } = getEnvironmentConfig();
 
 // Login scenarios live in tests/login.spec.ts. Here login is only test setup.
 test.describe('SauceDemo Automation Suite', () => {

@@ -1,7 +1,8 @@
 import { test, expect } from './fixtures';
 import { standardUser, invalidLoginScenarios } from './test-data/loginData';
+import { getEnvironmentConfig } from '../config/environments';
 
-const baseUrl = 'https://www.saucedemo.com/';
+const { baseURL: baseUrl } = getEnvironmentConfig();
 
 test.describe('Login', () => {
   test('valid user can login successfully', async ({ page, loginPage }) => {
