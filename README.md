@@ -40,6 +40,9 @@ checkout journey, product sorting by price, and logout.
 - **Typed, data-driven login tests** — `tests/test-data/loginData.ts` defines reusable
   login accounts and negative-scenario data with explicit TypeScript types; negative
   login tests are generated from that data instead of being hand-duplicated.
+- **Authentication-state reuse** — a Playwright setup project (`tests/auth.setup.ts`)
+  logs in once and saves `storageState`; feature tests that only need to be logged in
+  reuse it, while `login.spec.ts` always runs a real, unauthenticated login.
 - **Rich reporting** — list + HTML reporters, with screenshots, video, and traces
   captured on failure.
 - **Continuous Integration** — GitHub Actions runs the suite on every push to `main`,
@@ -148,6 +151,40 @@ real credentials, tokens, or non-public URLs into any committed file — only `.
 
 ---
 
+## Authentication State (storageState)
+
+Feature tests that only need to be logged in (`tests/saucedemo.spec.ts`) reuse a saved
+Playwright `storageState` instead of a real UI login before every test. Login itself
+(`tests/login.spec.ts`) always runs against a real, logged-out browser — it verifies the
+login mechanism, so it must never start pre-authenticated.
+
+**Three Playwright projects** (see `playwright.config.ts`):
+
+| Project | Runs | `storageState` |
+|---|---|---|
+| `setup` | `tests/auth.setup.ts` — logs in once as `standard_user` | — |
+| `unauthenticated` | `tests/login.spec.ts` | none (always logged out) |
+| `authenticated` | `tests/saucedemo.spec.ts` | `playwright/.auth/standard-user.json` |
+
+`authenticated` depends on `setup`, so the saved session is regenerated at the start of
+every run that needs it — never committed, never reused across runs.
+
+```bash
+npx playwright test --project=setup            # (re)generate the saved session only
+npx playwright test --project=unauthenticated   # login tests — always a real UI login
+npx playwright test --project=authenticated     # feature tests — reuse the saved session
+npx playwright test                             # full suite — setup runs automatically
+```
+
+**Credentials.** `tests/auth.setup.ts` logs in using `standardUser` from the existing
+`tests/test-data/loginData.ts` — no credential is duplicated or hardcoded a second time.
+
+**The `.auth` directory.** `playwright/.auth/` holds the generated storage-state file. It
+contains a live session cookie, so it's git-ignored and must never be committed — treat
+it like `.env`.
+
+---
+
 ## Why This Framework Was Built
 
 This project exists to demonstrate **how a professional QA/SDET structures a UI
@@ -168,8 +205,6 @@ automation framework**, not just that tests can be made to pass. The goals:
 
 - **More page objects** — extract `InventoryPage`, `CartPage`, and `CheckoutPage` so
   the remaining raw `page.locator(...)` calls in the specs move behind page objects.
-- **Fixtures** — a custom Playwright fixture that provides an already-logged-in `page`
-  to remove repeated login setup in tests.
 - **Data-driven tests** — parameterize logins and products via test data instead of
   hardcoded values.
 - **Cross-browser & mobile** — add Chromium/Firefox/WebKit and mobile viewport projects
