@@ -4,5 +4,8 @@ test-results
 .env
 .env.*
 !.env.example
+# Generated Playwright storageState files hold a live session cookie —
+# treat as a secret, never commit.
+playwright/.auth
 setofrules.md
 Learning 

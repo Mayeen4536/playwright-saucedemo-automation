@@ -1,16 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
-import { loginAsStandardUser } from './utils/auth';
 import { getEnvironmentConfig } from '../config/environments';
 
 const { baseURL: baseUrl } = getEnvironmentConfig();
 
-// Login scenarios live in tests/login.spec.ts. Here login is only test setup.
+// Login scenarios live in tests/login.spec.ts. This project (see
+// playwright.config.ts) starts every test already authenticated as
+// standard_user via a saved storageState — see tests/auth.setup.ts.
 test.describe('SauceDemo Automation Suite', () => {
-  let loginPage: LoginPage;
-
   test.beforeEach(async ({ page }) => {
-    loginPage = await loginAsStandardUser(page);
+    await page.goto('/inventory.html');
   });
 
   test('user can add product to cart', async ({ page }) => {
@@ -68,6 +67,7 @@ test.describe('SauceDemo Automation Suite', () => {
     await page.click('#logout_sidebar_link');
 
     await expect(page).toHaveURL(baseUrl);
-    expect(await loginPage.isLoginPageDisplayed()).toBe(true);
+    // Reuses LoginPage's state helper rather than duplicating the locator here.
+    expect(await new LoginPage(page).isLoginPageDisplayed()).toBe(true);
   });
 });
