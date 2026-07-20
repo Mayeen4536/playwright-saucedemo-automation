@@ -47,6 +47,10 @@ checkout journey, product sorting by price, and logout.
   captured on failure.
 - **Continuous Integration** — GitHub Actions runs the suite on every push to `main`,
   on a schedule (every 3 hours), and on demand, and uploads the HTML report as an artifact.
+- **Independent API-contract tests** — `tests/api/` exercises the public
+  [restful-booker](https://restful-booker.herokuapp.com/) practice API directly via
+  Playwright's built-in `request` fixture (no Axios/SuperTest). See "API Testing" below
+  for why this is a separate suite rather than a SauceDemo hybrid.
 
 ---
 
@@ -54,20 +58,32 @@ checkout journey, product sorting by price, and logout.
 
 ```
 saucedemo-playwright/
+├── api/                           # Everything for the independent API-contract suite
+│   ├── clients/
+│   │   └── restfulBookerClient.ts # Builds requests, returns APIResponse — no assertions
+│   ├── types/
+│   │   ├── auth.ts                # AuthRequest / AuthSuccessResponse / AuthFailureResponse
+│   │   └── booking.ts             # CreateBookingRequest / CreateBookingResponse / Booking
+│   └── test-data/
+│       └── bookerCredentials.ts   # restful-booker's published demo credentials
+├── config/
+│   ├── environments.ts            # SauceDemo (UI) baseURL per TEST_ENV
+│   └── apiEnvironments.ts         # restful-booker (API) baseURL per TEST_ENV — kept separate
 ├── pages/                        # Page Objects (locators + actions + state helpers)
 │   └── LoginPage.ts
 ├── tests/                        # Test specs (all assertions live here)
 │   ├── fixtures.ts               # Custom test.extend() — provides the loginPage fixture
-│   ├── utils/
-│   │   └── auth.ts               # Shared login-setup helper (used by saucedemo.spec.ts)
 │   ├── test-data/
 │   │   └── loginData.ts          # Typed reusable login accounts + negative scenario data
+│   ├── api/
+│   │   ├── auth.api.spec.ts      # restful-booker /auth — success + "200 but failed" contract
+│   │   └── booking.api.spec.ts   # restful-booker /booking — create + not-found
 │   ├── login.spec.ts             # Login scenarios (positive + data-driven negatives)
 │   └── saucedemo.spec.ts         # Cart, checkout, sorting, logout flows
 ├── .github/
 │   └── workflows/
 │       └── playwright-tests.yml  # CI pipeline
-├── playwright.config.ts          # Config: testIdAttribute, reporters, retries, timeouts
+├── playwright.config.ts          # Config: testIdAttribute, reporters, retries, timeouts, projects
 ├── package.json                  # Scripts and dependencies
 └── README.md
 ```
@@ -129,6 +145,11 @@ npx playwright test --list                    # list tests without running them
 it defaults to `qa`. An unknown value fails immediately with a clear error before any
 test runs.
 
+**API environment.** `config/apiEnvironments.ts` resolves the restful-booker API's
+base URL from the same `TEST_ENV` variable, kept as a separate file and type from the
+UI's `environments.ts` since the two configs describe unrelated systems (see "API
+Testing" below). Override with `QA_API_BASE_URL` / `STAGING_API_BASE_URL`.
+
 **Required setup.** Copy the example file and adjust values if needed:
 
 ```bash
@@ -182,6 +203,44 @@ npx playwright test                             # full suite — setup runs auto
 **The `.auth` directory.** `playwright/.auth/` holds the generated storage-state file. It
 contains a live session cookie, so it's git-ignored and must never be committed — treat
 it like `.env`.
+
+---
+
+## API Testing
+
+`tests/api/` is an **independent API-contract suite** against the public
+[restful-booker](https://restful-booker.herokuapp.com/) practice API, using Playwright's
+built-in `request` fixture (`APIRequestContext`) — no Axios, no SuperTest.
+
+**Why restful-booker and not SauceDemo.** A direct network audit of SauceDemo (page load,
+login, inventory display, add-to-cart) found it makes **zero** first-party API calls:
+login sets a cookie entirely in client-side JavaScript, and the cart is a plain
+`localStorage` array. The only non-static network traffic observed was a third-party
+telemetry SDK (`events.backtrace.io`), unrelated to the app's own behavior. SauceDemo
+exposes no first-party API to test, so **this suite does not attempt a hybrid SauceDemo
+UI/API workflow** — restful-booker is a separate, unrelated demo application, run here
+purely to practice API-contract testing and API authentication as their own skills.
+
+**Structure:**
+
+- `api/clients/restfulBookerClient.ts` — builds requests and returns the raw
+  `APIResponse`. It contains no `expect()` calls; specs own every assertion, the same
+  separation `LoginPage` keeps from `login.spec.ts`.
+- `api/types/` — explicit request/response types (`AuthRequest`,
+  `AuthSuccessResponse`/`AuthFailureResponse`, `CreateBookingRequest`/`CreateBookingResponse`).
+- `api/test-data/bookerCredentials.ts` — restful-booker's own published demo login
+  (`admin` / `password123`), not a secret — the same status as SauceDemo's
+  `standard_user` in `loginData.ts`. No generated token is ever written to disk.
+- `tests/api/auth.api.spec.ts` and `tests/api/booking.api.spec.ts` — assert status,
+  content type, response schema, field types, and (for auth) the error contract, not
+  just the HTTP status code.
+
+**Run it:**
+
+```bash
+npm run test:api                       # API suite only
+npx playwright test --project=api      # equivalent
+```
 
 ---
 

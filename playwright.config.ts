@@ -1,10 +1,12 @@
 import { defineConfig } from '@playwright/test';
 import { getEnvironmentConfig } from './config/environments';
+import { getApiEnvironmentConfig } from './config/apiEnvironments';
 import { authFile } from './config/auth';
 
 // Resolved eagerly so an unknown TEST_ENV fails the run immediately,
 // before any test file is even loaded.
 const { baseURL } = getEnvironmentConfig();
+const { apiBaseURL } = getApiEnvironmentConfig();
 
 export default defineConfig({
   testDir: './tests',
@@ -44,6 +46,16 @@ export default defineConfig({
       dependencies: ['setup'],
       use: {
         storageState: authFile,
+      },
+    },
+    {
+      // Independent API-contract tests (tests/api/) against restful-booker.
+      // Uses only the `request` fixture — no browser, no storageState, and
+      // its own baseURL, unrelated to SauceDemo's UI projects above.
+      name: 'api',
+      testMatch: /\.api\.spec\.ts$/,
+      use: {
+        baseURL: apiBaseURL,
       },
     },
   ],

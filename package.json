@@ -8,7 +8,8 @@
     "test:headed": "npx playwright test --headed",
     "test:report": "npx playwright show-report",
     "test:qa": "cross-env TEST_ENV=qa npx playwright test",
-    "test:staging": "cross-env TEST_ENV=staging npx playwright test"
+    "test:staging": "cross-env TEST_ENV=staging npx playwright test",
+    "test:api": "npx playwright test --project=api"
   },
   "keywords": [],
   "author": "",
