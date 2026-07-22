@@ -8,10 +8,20 @@ import { authFile } from './config/auth';
 const { baseURL } = getEnvironmentConfig();
 const { apiBaseURL } = getApiEnvironmentConfig();
 
+// GitHub Actions sets CI=true automatically — no workflow change needed for
+// this to take effect there. Always false/unset in local development.
+const isCI = !!process.env.CI;
+
 export default defineConfig({
   testDir: './tests',
   timeout: 30000,
-  retries: 0,
+  // Zero locally: every pass is a genuine first-attempt pass while iterating,
+  // and a failure is never masked by a second try. One retry in CI absorbs a
+  // single transient blip (slow runner, network hiccup) — it is not a way to
+  // make a genuinely flaky test acceptable; Playwright's reporters still
+  // track and surface a distinct "flaky" count for any test that only passed
+  // after a retry, and that count is what should get investigated, not hidden.
+  retries: isCI ? 1 : 0,
   use: {
     headless: true,
     baseURL,
@@ -19,12 +29,15 @@ export default defineConfig({
     testIdAttribute: 'data-test',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    trace: 'on-first-retry',
+    // Retained on failure regardless of whether a retry happens (unlike
+    // 'on-first-retry', which never fires locally since retries is 0 there).
+    // Discarded for every passing test, so cost stays proportional to actual
+    // failures rather than the full suite.
+    trace: 'retain-on-failure',
   },
-  reporter: [
-    ['list'],
-    ['html', { open: 'never' }]
-  ],
+  reporter: isCI
+    ? [['list'], ['html', { open: 'never' }], ['github']]
+    : [['list'], ['html', { open: 'never' }]],
   projects: [
     {
       // Produces playwright/.auth/standard-user.json. Not applied to any

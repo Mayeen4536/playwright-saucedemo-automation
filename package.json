@@ -9,13 +9,15 @@
     "test:report": "npx playwright show-report",
     "test:qa": "cross-env TEST_ENV=qa npx playwright test",
     "test:staging": "cross-env TEST_ENV=staging npx playwright test",
-    "test:api": "npx playwright test --project=api"
+    "test:api": "npx playwright test --project=api",
+    "trace:show": "npx playwright show-trace"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@types/node": "^20.19.43",
     "cross-env": "^10.1.0"
   }
 }

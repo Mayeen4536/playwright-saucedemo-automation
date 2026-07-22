@@ -43,8 +43,10 @@ checkout journey, product sorting by price, and logout.
 - **Authentication-state reuse** — a Playwright setup project (`tests/auth.setup.ts`)
   logs in once and saves `storageState`; feature tests that only need to be logged in
   reuse it, while `login.spec.ts` always runs a real, unauthenticated login.
-- **Rich reporting** — list + HTML reporters, with screenshots, video, and traces
-  captured on failure.
+- **Failure-focused diagnostics** — screenshot, video, and trace are all retained only
+  on failure (nothing extra for a passing test), reported via `list` + `html` locally and
+  an additional GitHub-native `github` reporter in CI. See "Diagnostics & Failure
+  Artifacts" below.
 - **Continuous Integration** — GitHub Actions runs the suite on every push to `main`,
   on a schedule (every 3 hours), and on demand, and uploads the HTML report as an artifact.
 - **Independent API-contract tests** — `tests/api/` exercises the public
@@ -240,6 +242,39 @@ purely to practice API-contract testing and API authentication as their own skil
 ```bash
 npm run test:api                       # API suite only
 npx playwright test --project=api      # equivalent
+```
+
+---
+
+## Diagnostics & Failure Artifacts
+
+**Philosophy:** a passing test produces no extra evidence; a failing test produces
+everything needed to diagnose it without re-running locally.
+
+| Artifact | Setting | Behavior |
+|---|---|---|
+| Screenshot | `only-on-failure` | One image at the moment of failure. UI tests only. |
+| Video | `retain-on-failure` | Recorded throughout, discarded on pass. UI tests only. |
+| Trace | `retain-on-failure` | Full replay (DOM snapshots, network, actions), discarded on pass — captured on the first failure itself, independent of whether a retry happens. |
+
+**Reporters:** `list` (console) and `html` always run; an additional built-in `github`
+reporter runs only when `CI` is set (GitHub Actions sets this automatically), annotating
+failures directly in the Actions log/PR view — no separate download needed to see what
+broke.
+
+**Retries:** `0` locally, `1` in CI (`retries: process.env.CI ? 1 : 0` in
+`playwright.config.ts`). Zero locally means every pass while developing is a genuine
+first-attempt pass. One retry in CI absorbs a single transient blip (a slow runner, a
+network hiccup) — it is a resilience safety net, not a way to make a genuinely flaky test
+acceptable; Playwright's reporters track a distinct "flaky" count for any test that only
+passes after a retry, and that count is what should get investigated.
+
+**Useful commands:**
+
+```bash
+npm test                 # run the suite; screenshot/video/trace saved only for failures
+npm run test:report      # open the last HTML report (screenshots/video/trace are embedded in it)
+npm run trace:show -- test-results/<test-folder>/trace.zip   # open one trace directly
 ```
 
 ---
