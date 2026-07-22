@@ -256,6 +256,7 @@ everything needed to diagnose it without re-running locally.
 | Screenshot | `only-on-failure` | One image at the moment of failure. UI tests only. |
 | Video | `retain-on-failure` | Recorded throughout, discarded on pass. UI tests only. |
 | Trace | `retain-on-failure` | Full replay (DOM snapshots, network, actions), discarded on pass — captured on the first failure itself, independent of whether a retry happens. |
+| Browser diagnostics | auto-fixture, on failure only | A `browser-diagnostics` JSON attachment (console errors + failed/4xx-5xx requests, URLs sanitized) — UI tests only, viewable in the HTML report's attachments for the failing test. |
 
 **Reporters:** `list` (console) and `html` always run; an additional built-in `github`
 reporter runs only when `CI` is set (GitHub Actions sets this automatically), annotating
