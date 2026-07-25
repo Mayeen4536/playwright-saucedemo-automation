@@ -1,40 +1,65 @@
 name: Playwright Tests
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches: [ main ]
-
-  schedule:
-    - cron: "0 */3 * * *"
-
+    branches: [main]
   workflow_dispatch:
+
+# Least privilege: this workflow only reads the repo and uploads its own
+# report — it never pushes, comments, or releases anything.
+permissions:
+  contents: read
+
+# Cancels a still-running job for the same PR/branch once a newer commit
+# arrives, so CI never finishes reporting on code that's already outdated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Explicit rather than left to GitHub's implicit default, so it's visible
+# here (not just known-by-convention) that CI is what drives playwright.config.ts's
+# isCI branch (retries, reporters). TEST_ENV is non-sensitive — it only
+# selects which of config/environments.ts's public baseURLs to resolve.
+env:
+  CI: true
+  TEST_ENV: qa
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Install dependencies
-      run: npm ci
+      # Chromium only: every project in playwright.config.ts runs against
+      # the default browser. Firefox/WebKit are never exercised today, so
+      # installing them would only cost time for coverage that doesn't exist.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      # Runs setup + unauthenticated + authenticated + api (16 tests) — the
+      # scope the Step 1 audit approved. The 'setup' project regenerates
+      # storageState fresh via 'authenticated'.dependencies; nothing here
+      # provides, expects, or relies on a committed auth file.
+      - name: Run Playwright suite
+        run: npm test
 
-    - name: Run tests
-      run: npx playwright test
-
-    - name: Upload report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report
-        path: playwright-report
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
