@@ -10,6 +10,8 @@
     "test:qa": "cross-env TEST_ENV=qa npx playwright test",
     "test:staging": "cross-env TEST_ENV=staging npx playwright test",
     "test:api": "npx playwright test --project=api",
+    "test:setup": "npx playwright test --project=setup",
+    "test:suite": "npx playwright test --project=unauthenticated --project=authenticated --project=api --no-deps",
     "trace:show": "npx playwright show-trace"
   },
   "keywords": [],

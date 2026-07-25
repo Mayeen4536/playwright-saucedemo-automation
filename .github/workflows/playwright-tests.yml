@@ -28,9 +28,23 @@ env:
 
 jobs:
   test:
+    # Distinct from the workflow name above so the Actions/PR checks list
+    # reads clearly once more than one job ever exists in this file.
+    name: Playwright E2E and API suite
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # --- Not sharding today — revisit only once ALL of these are true ---
+    # 1. Suite runtime becomes materially slow (today: ~20-30s for 16 tests).
+    # 2. Tests stay independently runnable per shard (already true — each
+    #    project/spec is self-contained today).
+    # 3. Test data stays safe under distributed parallelism — tests/api/
+    #    hits a SHARED PUBLIC restful-booker instance; concurrent shards
+    #    creating/reading data there could introduce cross-shard flakiness
+    #    that a single-worker run doesn't have.
+    # 4. Reports can be merged reliably (needs Playwright's blob reporter +
+    #    `merge-reports` — not configured today; the single `html` report
+    #    here assumes one run, not merged shards).
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -50,12 +64,22 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      # Runs setup + unauthenticated + authenticated + api (16 tests) — the
-      # scope the Step 1 audit approved. The 'setup' project regenerates
-      # storageState fresh via 'authenticated'.dependencies; nothing here
-      # provides, expects, or relies on a committed auth file.
-      - name: Run Playwright suite
-        run: npm test
+      # Split from the suite below so a broken login/session shows up as its
+      # own named, red step — distinct at a glance from an actual product or
+      # API test failure, no log-diving required to tell which kind it is.
+      # Regenerates storageState fresh every run; nothing here provides,
+      # expects, or relies on a committed auth file.
+      - name: Generate authentication state
+        run: npm run test:setup
+
+      # --no-deps (baked into the test:suite script) skips re-running
+      # 'setup' here — it already ran in the step above — so login only
+      # happens once per job. If the step above failed, this one is
+      # skipped automatically (no `if:` needed) rather than cascading a
+      # wall of misleading "authenticated" failures from a root cause
+      # that's actually just a broken login.
+      - name: Run test suite
+        run: npm run test:suite
 
       - name: Upload Playwright HTML report
         if: always()
@@ -63,3 +87,6 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
+          # Routine CI evidence, not a long-term record — 7 days is enough
+          # to investigate a recent failure without accumulating indefinitely.
+          retention-days: 7
