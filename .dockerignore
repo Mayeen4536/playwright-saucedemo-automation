@@ -1,0 +1,37 @@
+# Reinstalled fresh inside the image via `npm ci` — never copied from the
+# host, which could carry host-OS-specific native binaries.
+node_modules
+
+# Generated output from local/CI runs — no build value, and copying it in
+# would let stale prior diagnostics leak into a new image.
+playwright-report
+test-results
+
+# A live session cookie (see Learning/007) — must never enter an image.
+# Generated fresh inside the container instead, by the same 'setup'
+# project this repo already uses outside Docker.
+playwright/.auth
+
+# Never committed, never baked into an image either — real values only
+# ever come in at `docker run` time via -e/--env-file.
+.env
+.env.*
+
+# Git history has no runtime value and can be large.
+.git
+.gitignore
+
+# Editor/OS metadata — none exist in this repo today, excluded defensively
+# so they never end up in the image if they appear later.
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Documentation, CI config, and personal notes — confirmed in the Step 1
+# audit as not part of the minimum file set needed to install dependencies
+# or run tests.
+README.md
+Learning
+setofrules.md
+.github

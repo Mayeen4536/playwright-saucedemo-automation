@@ -12,7 +12,8 @@
     "test:api": "npx playwright test --project=api",
     "test:setup": "npx playwright test --project=setup",
     "test:suite": "npx playwright test --project=unauthenticated --project=authenticated --project=api --no-deps",
-    "trace:show": "npx playwright show-trace"
+    "trace:show": "npx playwright show-trace",
+    "docker:build": "docker build -t saucedemo-playwright ."
   },
   "keywords": [],
   "author": "",
