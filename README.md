@@ -47,8 +47,9 @@ checkout journey, product sorting by price, and logout.
   on failure (nothing extra for a passing test), reported via `list` + `html` locally and
   an additional GitHub-native `github` reporter in CI. See "Diagnostics & Failure
   Artifacts" below.
-- **Continuous Integration** — GitHub Actions runs the suite on every push to `main`,
-  on a schedule (every 3 hours), and on demand, and uploads the HTML report as an artifact.
+- **Continuous Integration** — GitHub Actions runs the suite on every pull request,
+  every push to `main`, and on demand, uploading the HTML report (`playwright-report`,
+  7-day retention) whether tests pass or fail. No GitHub secrets are required.
 - **Independent API-contract tests** — `tests/api/` exercises the public
   [restful-booker](https://restful-booker.herokuapp.com/) practice API directly via
   Playwright's built-in `request` fixture (no Axios/SuperTest). See "API Testing" below
