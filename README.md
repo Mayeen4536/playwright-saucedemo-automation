@@ -281,6 +281,37 @@ npm run trace:show -- test-results/<test-folder>/trace.zip   # open one trace di
 
 ---
 
+## Docker Execution (optional, local-only)
+
+Run the full suite with zero local Node/browser setup — build once, then run:
+
+```bash
+npm run docker:build                    # docker build -t saucedemo-playwright .
+docker run --rm saucedemo-playwright    # runs `npm test` inside the container
+```
+
+**Environment variables** pass straight through, same names as everywhere else:
+
+```bash
+docker run --rm -e TEST_ENV=staging saucedemo-playwright
+```
+
+**Accessing the HTML report** generated inside the container — mount it to a host folder:
+
+```bash
+docker run --rm -v "$(pwd)/playwright-report:/app/playwright-report" saucedemo-playwright
+npm run test:report      # then open it locally, same as any other run
+```
+
+On Windows with Git Bash, prefix that command with `MSYS_NO_PATHCONV=1` — its automatic
+path rewriting otherwise silently breaks the volume mount.
+
+**CI does not use this image.** GitHub Actions already runs on a clean, disposable
+runner with pinned Node/browser versions — Docker's value here is local reproducibility
+and a no-install setup, not a requirement for the pipeline itself.
+
+---
+
 ## Why This Framework Was Built
 
 This project exists to demonstrate **how a professional QA/SDET structures a UI
