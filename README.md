@@ -79,6 +79,7 @@ saucedemo-playwright/
 │   ├── test-data/
 │   │   └── loginData.ts          # Typed reusable login accounts + negative scenario data
 │   ├── api/
+│   │   ├── apiFixtures.ts        # API test.extend() — provides the bookerClient fixture
 │   │   ├── auth.api.spec.ts      # restful-booker /auth — success + "200 but failed" contract
 │   │   └── booking.api.spec.ts   # restful-booker /booking — create + not-found
 │   ├── login.spec.ts             # Login scenarios (positive + data-driven negatives)
@@ -234,6 +235,10 @@ purely to practice API-contract testing and API authentication as their own skil
 - `api/test-data/bookerCredentials.ts` — restful-booker's own published demo login
   (`admin` / `password123`), not a secret — the same status as SauceDemo's
   `standard_user` in `loginData.ts`. No generated token is ever written to disk.
+- `tests/api/apiFixtures.ts` — API specs import `test` and `expect` from here (not from
+  `@playwright/test`) and request the `bookerClient` fixture instead of constructing
+  `RestfulBookerClient` themselves. UI specs keep importing from `tests/fixtures.ts`.
+  The two files stay separate so API tests never start a browser.
 - `tests/api/auth.api.spec.ts` and `tests/api/booking.api.spec.ts` — assert status,
   content type, response schema, field types, and (for auth) the error contract, not
   just the HTTP status code.
