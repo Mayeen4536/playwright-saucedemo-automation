@@ -1,14 +1,11 @@
-import { test, expect } from '@playwright/test';
-import { RestfulBookerClient } from '../../api/clients/restfulBookerClient';
+import { test, expect } from './apiFixtures';
 import { adminCredentials, invalidCredentials } from '../../api/test-data/bookerCredentials';
 
 // Independent API-contract tests against restful-booker. Not connected to
 // SauceDemo in any way — see README.md's "API Testing" section for why.
 test.describe('restful-booker API — authentication', () => {
-  test('valid credentials return a usable token', async ({ request }) => {
-    const client = new RestfulBookerClient(request);
-
-    const response = await client.createToken(adminCredentials);
+  test('valid credentials return a usable token', async ({ bookerClient }) => {
+    const response = await bookerClient.createToken(adminCredentials);
 
     expect(response.status()).toBe(200);
     expect(response.headers()['content-type']).toContain('application/json');
@@ -20,10 +17,8 @@ test.describe('restful-booker API — authentication', () => {
     expect(body.token.length).toBeGreaterThan(0);
   });
 
-  test('invalid credentials are rejected via the response body, not the status code', async ({ request }) => {
-    const client = new RestfulBookerClient(request);
-
-    const response = await client.createToken(invalidCredentials);
+  test('invalid credentials are rejected via the response body, not the status code', async ({ bookerClient }) => {
+    const response = await bookerClient.createToken(invalidCredentials);
 
     // restful-booker responds 200 even when credentials are wrong — the
     // failure is only signalled by the response shape. Asserting status

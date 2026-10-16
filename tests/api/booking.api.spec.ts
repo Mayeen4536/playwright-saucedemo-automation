@@ -1,5 +1,4 @@
-import { test, expect } from '@playwright/test';
-import { RestfulBookerClient } from '../../api/clients/restfulBookerClient';
+import { test, expect } from './apiFixtures';
 import type { CreateBookingRequest } from '../../api/types/booking';
 
 const newBooking: CreateBookingRequest = {
@@ -14,10 +13,8 @@ const newBooking: CreateBookingRequest = {
 // Independent API-contract tests against restful-booker. Not connected to
 // SauceDemo in any way — see README.md's "API Testing" section for why.
 test.describe('restful-booker API — bookings', () => {
-  test('creating a booking echoes the submitted fields under a generated id', async ({ request }) => {
-    const client = new RestfulBookerClient(request);
-
-    const response = await client.createBooking(newBooking);
+  test('creating a booking echoes the submitted fields under a generated id', async ({ bookerClient }) => {
+    const response = await bookerClient.createBooking(newBooking);
 
     expect(response.status()).toBe(200);
     expect(response.headers()['content-type']).toContain('application/json');
@@ -32,10 +29,8 @@ test.describe('restful-booker API — bookings', () => {
     expect(body.booking).toEqual(newBooking);
   });
 
-  test('fetching a non-existent booking id returns 404, not a booking payload', async ({ request }) => {
-    const client = new RestfulBookerClient(request);
-
-    const response = await client.getBooking(999999999);
+  test('fetching a non-existent booking id returns 404, not a booking payload', async ({ bookerClient }) => {
+    const response = await bookerClient.getBooking(999999999);
 
     expect(response.status()).toBe(404);
     // A 404 here is plain text, not JSON. Checking content type (not just
